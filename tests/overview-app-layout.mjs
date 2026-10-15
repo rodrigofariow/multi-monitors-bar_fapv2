@@ -77,4 +77,50 @@ manager._appDisplayVisible = true;
 manager._configureNativeAppDisplayLayout();
 assert.equal(manager._appDisplay, null);
 assert.equal(manager._appDisplayVisible, false);
+// GNOME 50 dropped grid modes: IconGridLayout.adaptToSize() picks columns and
+// rows from the page size on every allocation unless they are fixed.
+const gnome50Layout = {
+    columnsPerPage: 6, rowsPerPage: 4, _fixedCols: 0, _fixedRows: 0,
+    adaptToSize(width, height) {
+        if (this._pageWidth === width && this._pageHeight === height)
+            return;
+        this._pageWidth = width;
+        this._pageHeight = height;
+        if (this._fixedCols && this._fixedRows) {
+            this.columnsPerPage = this._fixedCols;
+            this.rowsPerPage = this._fixedRows;
+            return;
+        }
+        this.columnsPerPage = Math.floor(width / 200);
+        this.rowsPerPage = Math.floor(height / 200);
+    },
+};
+const gnome50Grid = { layoutManager: gnome50Layout, relayouts: 0, queue_relayout() { this.relayouts++; } };
+const gnome50 = vm.runInNewContext(`({${source.slice(start, end)}})`);
+Object.assign(gnome50, {
+    _appDisplay: { _grid: gnome50Grid },
+    _isActorUsable: actor => !!actor,
+    _isPortraitMonitor: () => portrait,
+});
+const gnome50Dimensions = () => [gnome50Layout.columnsPerPage, gnome50Layout.rowsPerPage];
+
+// The grid was already allocated at this size, so adaptToSize() returns early:
+// the configured layout must apply without a page size change.
+portrait = false;
+gnome50Layout.adaptToSize(1920, 1080);
+gnome50._configureNativeAppDisplayLayout();
+gnome50Layout.adaptToSize(1920, 1080);
+assert.deepEqual(gnome50Dimensions(), [8, 3], 'GNOME 50 applies the layout without a resize');
+assert.equal(gnome50Grid.relayouts, 1, 'a changed GNOME 50 layout queues a relayout');
+for (const [isPortrait, width, height, expected] of [
+    [false, 1920, 1080, [8, 3]], [false, 1366, 768, [8, 3]], [true, 1080, 1920, [4, 5]],
+]) {
+    portrait = isPortrait;
+    gnome50._configureNativeAppDisplayLayout();
+    gnome50Layout.adaptToSize(width, height);
+    assert.deepEqual(gnome50Dimensions(), expected, 'GNOME 50 allocation keeps the configured layout');
+}
+const gnome50Relayouts = gnome50Grid.relayouts;
+gnome50._configureNativeAppDisplayLayout();
+assert.equal(gnome50Grid.relayouts, gnome50Relayouts, 'unchanged GNOME 50 layouts should not queue more work');
 console.log('Overview app-grid layout regression checks passed');

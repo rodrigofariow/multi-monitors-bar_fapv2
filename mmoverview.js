@@ -1012,9 +1012,19 @@ export const MultiMonitorsControlsManager = GObject.registerClass(
             // modes too, otherwise it overwrites these dimensions and caches
             // a different mode (depending on theme padding and monitor size).
             // Reset the cached index when rotating: both modes use index 0.
-            grid.setGridModes([{ columns, rows }]);
-            grid._setGridMode(-1);
-            grid._setGridMode(0);
+            if (typeof grid.setGridModes === 'function') {
+                grid.setGridModes([{ columns, rows }]);
+                grid._setGridMode(-1);
+                grid._setGridMode(0);
+            } else {
+                // GNOME 50 has no grid modes; adaptToSize() keeps the fixed
+                // dimensions instead of recomputing them on every allocation.
+                layoutManager._fixedCols = columns;
+                layoutManager._fixedRows = rows;
+                layoutManager.columnsPerPage = columns;
+                layoutManager.rowsPerPage = rows;
+                grid.queue_relayout();
+            }
             this._lastAppDisplayLayout = layoutKey;
         }
 
