@@ -26,3 +26,29 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends libglib2.0-bin
           glib-compile-schemas --strict --dry-run schemas
+
+  # The only check branch protection requires. List every job in `needs`;
+  # the first step fails the build when one is missing.
+  all-checks:
+    if: always()
+    needs: [test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Every job is gated
+        env:
+          GATED: ${{ toJSON(needs) }}
+        run: |
+          python3 - <<'PY'
+          import json, os, yaml
+          workflow = yaml.safe_load(open('.github/workflows/tests.yml'))
+          jobs = set(workflow['jobs']) - {'all-checks'}
+          missing = jobs - set(json.loads(os.environ['GATED']))
+          if missing:
+              raise SystemExit(f'Add to all-checks needs: {sorted(missing)}')
+          PY
+
+      - name: Every job passed
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: exit 1
