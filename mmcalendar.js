@@ -564,6 +564,7 @@ var MultiMonitorsDateMenuButton = (() => {
             // change, so record what super._init() wires up and drop it again in
             // _onDestroy().
             this._mmGlobalSignals = [];
+            this._mmNotificationSourceSignals = [];
             this._mmEventSourceIds = [];
 
             if (DateMenu.DateMenuButton) {
@@ -769,19 +770,51 @@ var MultiMonitorsDateMenuButton = (() => {
 
             for (const object of singletons) {
                 const connect = object.connect.bind(object);
-                object.connect = (...args) => {
-                    const id = connect(...args);
+                object.connect = (signal, handler, ...args) => {
+                    const id = connect(signal,
+                        this._mmTrackSourceAddedHandler(object, signal, handler), ...args);
                     this._mmGlobalSignals.push({ object, id });
                     return id;
                 };
             }
 
             try {
-                callback();
+                this._mmTrackNotificationSourceSignals(
+                    MainRef?.messageTray?.getSources() ?? [], callback);
             } finally {
                 // Removes the own property again, restoring the prototype method.
                 for (const object of singletons)
                     delete object.connect;
+            }
+        }
+
+        _mmTrackSourceAddedHandler(object, signal, handler) {
+            // MessagesIndicator connects 'notify::count' on every notification
+            // source, at build time and from its 'source-added' handler, and never
+            // disconnects. Those handlers keep each destroyed date menu alive and
+            // throw "this._settings is null" on every notification.
+            if (object !== MainRef?.messageTray || signal !== 'source-added')
+                return handler;
+
+            return (tray, source, ...args) => this._mmTrackNotificationSourceSignals(
+                [source], () => handler(tray, source, ...args));
+        }
+
+        _mmTrackNotificationSourceSignals(sources, callback) {
+            for (const source of sources) {
+                const connect = source.connect.bind(source);
+                source.connect = (...args) => {
+                    const id = connect(...args);
+                    this._mmNotificationSourceSignals.push({ source, id });
+                    return id;
+                };
+            }
+
+            try {
+                return callback();
+            } finally {
+                for (const source of sources)
+                    delete source.connect;
             }
         }
 
@@ -790,6 +823,14 @@ var MultiMonitorsDateMenuButton = (() => {
                 object.disconnect(id);
             }
             this._mmGlobalSignals = [];
+
+            // Removed sources are already disposed and their handlers gone with them.
+            const liveSources = MainRef?.messageTray?.getSources() ?? [];
+            for (const { source, id } of this._mmNotificationSourceSignals ?? []) {
+                if (liveSources.includes(source))
+                    source.disconnect(id);
+            }
+            this._mmNotificationSourceSignals = [];
         }
 
         _mmDisconnectEventSourceSignals() {
