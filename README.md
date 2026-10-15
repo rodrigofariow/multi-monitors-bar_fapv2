@@ -59,19 +59,19 @@ chmod +x reinstall.sh
 
 1. Copy the extension folder:
    ```bash
-   cp -r . ~/.local/share/gnome-shell/extensions/multi-monitors-bar@frederykabryan
+   cp -r . ~/.local/share/gnome-shell/extensions/multi-monitors-bar@rodrigofariow
    ```
 
 2. Compile schemas:
    ```bash
-   glib-compile-schemas ~/.local/share/gnome-shell/extensions/multi-monitors-bar@frederykabryan/schemas/
+   glib-compile-schemas ~/.local/share/gnome-shell/extensions/multi-monitors-bar@rodrigofariow/schemas/
    ```
 
 3. Restart GNOME Shell (see note above).
 
 4. Enable:
    ```bash
-   gnome-extensions enable multi-monitors-bar@frederykabryan
+   gnome-extensions enable multi-monitors-bar@rodrigofariow
    ```
 
 ## ⚙️ Configuration
@@ -79,7 +79,7 @@ chmod +x reinstall.sh
 Open preferences through the **Extensions** app (click the ⚙️ icon next to *Multi Monitor Bar*) or via command line:
 
 ```bash
-gnome-extensions prefs multi-monitors-bar@frederykabryan
+gnome-extensions prefs multi-monitors-bar@rodrigofariow
 ```
 
 ### Preference Switches
@@ -113,7 +113,7 @@ monitors and available panel icons in preferences.
 ### Advanced: gsettings CLI
 
 ```bash
-SCHEMA_DIR="$HOME/.local/share/gnome-shell/extensions/multi-monitors-bar@frederykabryan/schemas"
+SCHEMA_DIR="$HOME/.local/share/gnome-shell/extensions/multi-monitors-bar@rodrigofariow/schemas"
 
 # View / set any setting
 GSETTINGS_SCHEMA_DIR="$SCHEMA_DIR" gsettings get \
@@ -143,11 +143,11 @@ Object.keys(Main.panel.statusArea)
 
 1. Verify installation path:
    ```bash
-   ls ~/.local/share/gnome-shell/extensions/multi-monitors-bar@frederykabryan/
+   ls ~/.local/share/gnome-shell/extensions/multi-monitors-bar@rodrigofariow/
    ```
 2. Check compiled schema exists:
    ```bash
-   ls ~/.local/share/gnome-shell/extensions/multi-monitors-bar@frederykabryan/schemas/gschemas.compiled
+   ls ~/.local/share/gnome-shell/extensions/multi-monitors-bar@rodrigofariow/schemas/gschemas.compiled
    ```
 3. Restart GNOME Shell.
 </details>
@@ -157,7 +157,7 @@ Object.keys(Main.panel.statusArea)
 
 ```bash
 journalctl -f -o cat /usr/bin/gnome-shell
-gnome-extensions info multi-monitors-bar@frederykabryan
+gnome-extensions info multi-monitors-bar@rodrigofariow
 ```
 </details>
 
@@ -168,8 +168,8 @@ gnome-extensions info multi-monitors-bar@frederykabryan
 2. Confirm multiple monitors are connected.
 3. Toggle the extension:
    ```bash
-   gnome-extensions disable multi-monitors-bar@frederykabryan
-   gnome-extensions enable  multi-monitors-bar@frederykabryan
+   gnome-extensions disable multi-monitors-bar@rodrigofariow
+   gnome-extensions enable  multi-monitors-bar@rodrigofariow
    ```
 </details>
 
@@ -178,7 +178,7 @@ gnome-extensions info multi-monitors-bar@frederykabryan
 
 1. Check the exclude list:
    ```bash
-   GSETTINGS_SCHEMA_DIR="$HOME/.local/share/gnome-shell/extensions/multi-monitors-bar@frederykabryan/schemas" \
+   GSETTINGS_SCHEMA_DIR="$HOME/.local/share/gnome-shell/extensions/multi-monitors-bar@rodrigofariow/schemas" \
      gsettings get org.gnome.shell.extensions.multi-monitors-bar exclude-indicators
    ```
 2. Refresh by toggling the extension.
@@ -187,8 +187,8 @@ gnome-extensions info multi-monitors-bar@frederykabryan
 ## 🗑️ Uninstallation
 
 ```bash
-gnome-extensions disable multi-monitors-bar@frederykabryan
-rm -rf ~/.local/share/gnome-shell/extensions/multi-monitors-bar@frederykabryan
+gnome-extensions disable multi-monitors-bar@rodrigofariow
+rm -rf ~/.local/share/gnome-shell/extensions/multi-monitors-bar@rodrigofariow
 # Restart GNOME Shell
 ```
 

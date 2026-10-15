@@ -1,9 +1,9 @@
 #!/bin/bash
 # Reinstall script for Multi Monitor Bar extension
 
-EXT_UUID="multi-monitors-bar@frederykabryan"
-EXT_DIR="$HOME/.local/share/gnome-shell/extensions/$EXT_UUID"
 SOURCE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+EXT_UUID="$(python3 -c 'import json, sys; print(json.load(open(sys.argv[1]))["uuid"])' "$SOURCE_DIR/metadata.json")"
+EXT_DIR="$HOME/.local/share/gnome-shell/extensions/$EXT_UUID"
 
 echo "Disabling extension..."
 gnome-extensions disable "$EXT_UUID" 2>/dev/null
