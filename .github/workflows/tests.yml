@@ -27,6 +27,11 @@ jobs:
           sudo apt-get install -y --no-install-recommends libglib2.0-bin
           glib-compile-schemas --strict --dry-run schemas
 
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - run: true
+
   # The only check branch protection requires. List every job in `needs`;
   # the first step fails the build when one is missing.
   all-checks:
